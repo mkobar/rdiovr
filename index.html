@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rdio VR</title>
+        <link href="Rdio%20VR_files/rdiovr.css" rel="stylesheet">
+        <link href="Rdio%20VR_files/font-awesome.css" rel="stylesheet">
+    <link href="Rdio%20VR_files/Content.css" type="text/css" rel="stylesheet"><link href="Rdio%20VR_files/socialwidgets.css" type="text/css" rel="stylesheet"></head>
+    <body>
+        <div id="bioSection">
+            <div class="sectionInner">
+                <h1 id="artistName"></h1>
+                <div id="artistImageContainer">
+                    <img id="artistImage" src="Rdio%20VR_files/null-400.png">
+                </div>
+                <div id="artistBio"></div>
+            </div>
+        </div>
+        <div id="playerSection">
+            <div class="sectionInner">
+                <h1 id="pageTitle">theRdioNest</h1>
+                <div id="textInputContainer">
+                    <input value="police" id="textInput" type="text">
+                </div>
+                <div id="searchButtons">
+                    <button id="searchText" class="searchButton">Search</button>
+                    <button id="toggleSpeech" class="searchButton">Speech</button>
+                    <button id="randomArtist" class="searchButton">Random</button>
+                </div>
+                <div id="playerInfo">
+                    <div id="counter">
+                        <span id="playPause"><button id="toggle-pause">Play</button></span>
+                        <span id="currentAndTotal">
+                            <span id="currentTime">-1</span>
+                            /
+                            <span id="totalTime">infintiy</span>
+                        </span>
+                    </div>
+                    <table>
+                        <tbody><tr>
+                            <td class="tableLabel">Artist:</td>
+                            <td id="currentArtist">unknown</td>
+                        </tr>
+                        <tr>
+                            <td class="tableLabel">Track Title:</td>
+                            <td id="currentTT">unknown</td>
+                        </tr>
+                        <tr>
+                            <td class="tableLabel">Album:</td>
+                            <td id="currentAlbum">unknown</td>
+                        </tr>
+                    </tbody></table>
+                    <div id="currentArtworkContainer">
+                        <img id="currentArtwork" src="Rdio%20VR_files/null-400.png" height="400" width="400">
+                    </div>
+                    <div id="currentRdioID"></div>
+                </div>
+            </div>
+        </div>
+        <div id="recSection">
+            <div class="sectionInner">
+                <h6>other tracks by <span id="otherTracksArtist">unknown</span>:</h6>
+                <div id="otherHotTracks">
+                    <div><button class="recSectionButton" id="otherTrack1">Other track 1</button></div>
+                    <div><button class="recSectionButton" id="otherTrack2">Other track 2</button></div>
+                    <div><button class="recSectionButton" id="otherTrack3">Other track 3</button></div>
+                    <div><button class="recSectionButton" id="otherTrack4">Other track 4</button></div>
+                    <div><button class="recSectionButton" id="otherTrack5">Other track 5</button></div>
+                </div>
+                <h6>artists similiar to <span id="similarArtistsArtist">unknown</span>:</h6>
+                <div id="echoSimilarArtists">
+                    <div><button class="recSectionButton" id="similarArtist0">Similar Artist 1</button></div>
+                    <div><button class="recSectionButton" id="similarArtist1">Similar Artist 2</button></div>
+                    <div><button class="recSectionButton" id="similarArtist2">Similar Artist 3</button></div>
+                    <div><button class="recSectionButton" id="similarArtist3">Similar Artist 4</button></div>
+                    <div><button class="recSectionButton" id="similarArtist4">Similar Artist 5</button></div>
+                </div>
+            </div>
+        </div>
+
+        <script src="Rdio%20VR_files/d3.js" charset="utf-8"></script>
+        <script src="Rdio%20VR_files/rdiovr.js" charset="utf-8"></script>
+        <script src="Rdio%20VR_files/api.js"></script>
+        <script>
+        d3.select("#toggle-pause").on("click", function(){
+            console.log('toggling pause state now');
+            R.player.togglePause();
+        });
+        d3.select("#searchText").on("click", function(){
+            searchTextBoxContents();
+        });
+        d3.select("#toggleSpeech").on("click", function(){
+            if (d3.select("#toggleSpeech").classed("nowRecording")) {
+                console.log("stopping speech recognition");
+                recognition.stop();
+                d3.select("#toggleSpeech").classed("nowRecording", false);
+            } else {
+                console.log("starting speech recognition");
+                recognition.start();
+                d3.select("#toggleSpeech").classed("nowRecording", true);
+            }
+        });
+        d3.select("#randomArtist").on("click", function(){
+            randomArtist();
+            d3.select("#textInput").property("value", "");
+        });
+        var recognition;
+        var the_transcript = '';
+        R.ready(function() {
+            setInterval(updateRdioVR, 500);
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = "en-US";
+            recognition.onresult = function(event) {
+                the_transcript = '';
+                for (var i = event.resultIndex; i < event.results.length; ++i) {
+                    the_transcript += event.results[i][0].transcript;
+                }
+                d3.select("#textInput").property("value", the_transcript);
+                if (event.results[0].isFinal) {
+                    searchEchoNest(the_transcript);
+                }
+            };
+        });
+        document.onkeydown = function(e) {
+            e = e || window.event;
+            if (e.keyCode == 13) {
+                searchTextBoxContents();
+            }
+        };
+        </script>
+    
+</body></html>
